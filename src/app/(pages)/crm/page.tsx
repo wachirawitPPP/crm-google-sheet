@@ -77,7 +77,7 @@ export default function Page() {
   return <CRMApp />;
 }
 
-export function CRMApp() {
+ function CRMApp() {
   const [deals, setDeals] = useState<any[]>([]);
   const [dragId, setDragId] = useState<string | null>(null);
   const [showDealModal, setShowDealModal] = useState(false);
