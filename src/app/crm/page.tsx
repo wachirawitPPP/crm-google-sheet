@@ -1,8 +1,5 @@
 "use client";
 
-// app/page.tsx — Next.js + Tailwind (Client Component)
-// Now wired to call our Google Sheets API routes.
-
 import React, { useEffect, useMemo, useState } from "react";
 
 // --- Types / Constants
@@ -77,7 +74,7 @@ export default function Page() {
   return <CRMApp />;
 }
 
- function CRMApp() {
+function CRMApp() {
   const [deals, setDeals] = useState<any[]>([]);
   const [dragId, setDragId] = useState<string | null>(null);
   const [showDealModal, setShowDealModal] = useState(false);
@@ -114,20 +111,32 @@ export default function Page() {
 
   // ===== API wiring helpers =====
   useEffect(() => {
-    // Load from Sheets on mount
     (async () => {
       try {
         const [acRes, dlRes] = await Promise.all([
           fetch("/api/accounts").then((r) => r.json()).catch(() => null),
           fetch("/api/deals").then((r) => r.json()).catch(() => null),
         ]);
+
         if (acRes?.status) setAccounts(acRes.data || []);
-        if (dlRes?.status) setDeals((dlRes.data && dlRes.data.length > 0 ? dlRes.data : seedDeals) || seedDeals);
+
+        if (dlRes?.status) {
+          const dealsData = (dlRes.data && dlRes.data.length > 0 ? dlRes.data : seedDeals) || seedDeals;
+
+          const normalizedDeals = dealsData.map((d: any) => ({
+            ...d,
+            value: Number(String(d.value).replace(/,/g, "")), // ลบ comma ออกก่อนแปลง
+          }));
+          console.log(normalizedDeals)
+
+          setDeals(normalizedDeals);
+        }
       } catch (e) {
         console.warn("Load from Sheets failed, using seeds", e);
       }
     })();
   }, []);
+
 
   async function apiCreateAccount(payload: any) {
     const res = await fetch("/api/accounts", {
